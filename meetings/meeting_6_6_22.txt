@@ -1,0 +1,26 @@
+
+meeting notes, 6.6.2022:
+
+Kate:
+- working on CNN for text classification
+- using word2vec
+- base model for now, but might look into more recent CNN models for text/semantic classification
+
+Ahmet:
+- apparently written exam was difficult in prior years.
+- beware of private leaderboard. don't overfit and keep model general enough so we don't lose points in private leaderboard
+- still looking into XLNet and other sophisticated models which could give us state-of-the-art results
+
+
+General:
+
+- briefly discussed how ensemble models work (train different models and then make prediction based on their results)
+
+- we could fine tune our models on external datasets. preferably twitter. doesn't have to be labeled
+
+- Euler access provided to all students: login with "ssh eth_username@euler.ethz.ch"
+- password is same as the one used for mystudies etc.
+- get access code on first login
+- for this and more info: https://scicomp.ethz.ch/wiki/Getting_started_with_clusters
+- not sure if we have gpu access
+
