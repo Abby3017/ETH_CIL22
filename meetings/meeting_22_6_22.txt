@@ -1,0 +1,20 @@
+
+meeting 22.6.2022
+
+lou:
+- word2vec with diff. neural networks. with or without pre processing
+- try different word embeddings
+- max accuracy at the moment about 80%
+
+ahmet:
+- 1 week only experimenting on text-gcn
+- mainly work on adjacency matrix and leveraging word embeddings for similarity between words
+
+abhinav:
+- lstm and rnn with attention models
+- different word embeddings
+
+kate:
+- preprocessing
+- experiment pre processing effectiveness by applying it on our models
+
