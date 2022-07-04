@@ -1,51 +1,101 @@
 
 import re
 
-def preprocess_tweets(doc_lines, tweet_labels, rare=5, interlabel=0.05, freq_thresh=5, pos=1.0, neg=0.0):
+
+def preprocess_tweets(train_docs, test_docs, train_labels, rare=5, freq_thresh=5, interlabel_thresh=0.05, pos=1.0, neg=0.0):
     """
-    preprocess a list of docs (tweets) and output a list of lists of preprocessed tokens
-    :param doc_lines: list of tweets
-    :param tweet_labels: list of tweet labels
-    :param rare: how rare can a word be before it is discarded
-    :param interlabel: interlabel commonality threshold
-    :param freq_thresh: frequency threshold for spellchecking
-    :return: list of lists of preprocessed tokens
+    preprocess training and test tweets. does the following preprocessing steps:
+    1) turns sentences into lists of tokens (words)
+    2) removes rare words, occurring less than "rare" times
+    3) remove user and url from tweets
+    4) remove words consisting solely of digits
+    5) remove words that occurr nearly equally frequent for positive and negative tweets
+    6) spell-check words that would be discarded otherwise (are rare)
+    ------------------------------------------------------------------------
+    :param train_docs: training tweets as list of strings
+    :param test_docs: testing tweets as list of strings
+    :param train_labels: training tweet labels as list of floats
+    :param rare: rarity threshold for word frequencies. if below threshold, it is discarded
+    :param freq_thresh: frequency threshold for spellchecking. larger values delete more words
+    :param interlabel_thresh: interlabel commonality threshold
+    :param pos: positive tweet label
+    :param neg: negative tweet label
+    :return: tuple of preprocessed train tweets, preprocessed test tweets and training labels
     """
-    tokenized_tweets = split_into_tokens(doc_lines)
-    word_freq = make_word_freq(tokenized_tweets)
+    tokenized_train = split_into_tokens(train_docs)
+    tokenized_test = split_into_tokens(test_docs)
+    # word freq of train and test docs
+    word_freq = make_word_freq(tokenized_train + tokenized_test)
     pos_tweets = []
     neg_tweets = []
     # length of tweets and their labels has to be equal
-    assert len(doc_lines) == len(tweet_labels)
+    assert len(train_docs) == len(train_labels)
     # build positive and negative tweet lists
-    for i, t in enumerate(tokenized_tweets):
-        if tweet_labels[i] == pos:
+    for i, t in enumerate(tokenized_train):
+        if train_labels[i] == pos:
             pos_tweets.append(t)
-        elif tweet_labels[i] == neg:
+        elif train_labels[i] == neg:
             neg_tweets.append(t)
         else:
             assert False, "mismatch on tweet label"
     pos_word_freq = make_word_freq(pos_tweets)
     neg_word_freq = make_word_freq(neg_tweets)
-    # eliminate rare words and do spellchecking
-    for i, tt in enumerate(tokenized_tweets):
+    for i, tt in enumerate(tokenized_train):
         cleaned_tokens = []
         for j, t in enumerate(tt):
             # is the word not a user, url or digit
             if not is_user_url(t) and not t.isdigit():
                 # do we pass the rare threshold?
                 if word_freq[t] > rare:
-                    if not common_interlabel(t, pos_word_freq, neg_word_freq, thresh=interlabel):
+                    if not common_interlabel(t, pos_word_freq, neg_word_freq, thresh=interlabel_thresh):
                         cleaned_tokens.append(t)
                 else:
                     # corrected word candidates
                     word_candidates = spellcheck(t, word_freq, freq_thresh=freq_thresh)
                     for w in word_candidates:
                         # does the corrected word check the other tests?
-                        if not is_user_url(w) and not w.isdigit() and not common_interlabel(w, pos_word_freq, neg_word_freq, thresh=interlabel):
+                        if not is_user_url(w) and not w.isdigit() and not common_interlabel(w, pos_word_freq,
+                                                                                            neg_word_freq,
+                                                                                            thresh=interlabel_thresh):
                             cleaned_tokens.append(w)
-        tokenized_tweets[i] = cleaned_tokens
-    return tokenized_tweets
+        tokenized_train[i] = cleaned_tokens
+    # delete empty elements in training data
+    clean_train, clean_label = delete_empties(tokenized_train, train_labels)
+    assert len(clean_train) == len(clean_label), "dimension mismatch between train data and labels"
+    # iterate over testing data
+    for i, tt in enumerate(tokenized_test):
+        cleaned_tokens = []
+        for j, t in enumerate(tt):
+            # is the word not a user, url or digit
+            if not is_user_url(t) and not t.isdigit():
+                # do we pass the rare threshold?
+                if word_freq[t] > rare:
+                    if not common_interlabel(t, pos_word_freq, neg_word_freq, thresh=interlabel_thresh):
+                        cleaned_tokens.append(t)
+                else:
+                    # corrected word candidates
+                    word_candidates = spellcheck(t, word_freq, freq_thresh=freq_thresh)
+                    for w in word_candidates:
+                        # does the corrected word check the other tests?
+                        if not is_user_url(w) and not w.isdigit() and not common_interlabel(w, pos_word_freq,
+                                                                                            neg_word_freq,
+                                                                                            thresh=interlabel_thresh):
+                            cleaned_tokens.append(w)
+        # test tweets shouldn't be empty. if they are, then use the original without preprocessing
+        if len(cleaned_tokens) < 1:
+            cleaned_tokens = tt
+        tokenized_test[i] = cleaned_tokens
+    return clean_train, tokenized_test, clean_label
+
+
+# handle empty training tweets
+def delete_empties(train_tweets, tweet_labels):
+    # tokenized lists of training tweets that are not empty
+    non_empty_train = [t for t in train_tweets if len(t) >= 1]
+    # if training tweet not empty label also doesn't get removed
+    non_empty_label = [l for i, l in enumerate(tweet_labels) if len(train_tweets[i]) >= 1]
+    return non_empty_train, non_empty_label
+
 
 
 def split_into_tokens(doc_lines):
