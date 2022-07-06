@@ -1,7 +1,7 @@
 
 import numpy as np
 import pandas as pd
-from preprocess import preprocess_tweets, tokens_to_sentence
+from preprocess import preprocess_tweets, tokens_to_sentence, delete_duplicates
 from sentence_transformers import SentenceTransformer, util
 import time
 from numpy import dot
@@ -36,7 +36,48 @@ tweet_labels = [1.0 for _ in p_data] + [0.0 for _ in n_data]
 print(len(tweet_data))
 print(len(tweet_labels))
 
+strt = time.time()
 X_train, X_test, Y_train, Y_test = train_test_split(tweet_data, tweet_labels, test_size=0.1, random_state=42)
+print('preprocessing took: ', time.time()-strt, 's ')
+
+'''
+strt = time.time()
+u_x_train, u_y_train = delete_duplicates(X_train, Y_train)
+print(len(u_x_train))
+print('preprocessing took: ', time.time()-strt, 's ')
+'''
+
+strt = time.time()
+print(len(X_train), X_train[:10])
+print(len(Y_train), Y_train[:10])
+# u_x_train = list(dict.fromkeys(X_train, Y_train).keys())
+u_xy_dict = dict(zip(X_train, Y_train))
+u_x_train = list(u_xy_dict.keys())
+u_y_train = list(u_xy_dict.values())
+print(len(u_x_train), u_x_train[:10])
+print(len(u_y_train), u_y_train[:10])
+print('len after duplicate deletion: ', len(u_x_train))
+print('deleting duplicates took: ', time.time()-strt)
+
+'''
+with open('C:/Users/Ahmet/ETH_Master/FS 22/CIL/twitter_ds/twitter-datasets/unique_train.txt', 'w', encoding='utf-8') as f:
+    f.write('\n'.join(u_x_train))
+
+with open('C:/Users/Ahmet/ETH_Master/FS 22/CIL/twitter_ds/twitter-datasets/small_x_train.txt', 'w', encoding='utf-8') as f:
+    f.write('\n'.join(X_train))
+
+with open('C:/Users/Ahmet/ETH_Master/FS 22/CIL/twitter_ds/twitter-datasets/unique_y.txt', 'w', encoding='utf-8') as f:
+    f.write('\n'.join([str(y) for y in u_y_train]))
+
+with open('C:/Users/Ahmet/ETH_Master/FS 22/CIL/twitter_ds/twitter-datasets/small_y_train.txt', 'w', encoding='utf-8') as f:
+    f.write('\n'.join([str(y) for y in Y_train]))
+'''
+
+# print(X_train[:10])
+# do duplicate deletion
+# sorted(set(X_train), key=X_train.index)
+
+exit()
 
 # do preprocessing
 

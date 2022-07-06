@@ -35,6 +35,10 @@ def preprocess_tweets(train_docs, test_docs, train_labels, rare=5, freq_thresh=5
     :param segmentation: if True, does segmentation of hashtags
     :return: tuple of preprocessed train tweets, preprocessed test tweets and training labels
     """
+    # length of tweets and their labels has to be equal
+    assert len(train_docs) == len(train_labels), 'training tweets and labels length should be the same'
+    if duplicate_flag:
+        train_docs, train_labels = delete_duplicates(train_docs, train_labels)
     tokenized_train = split_into_tokens(train_docs)
     tokenized_test = split_into_tokens(test_docs)
     if segmentation:
@@ -46,8 +50,6 @@ def preprocess_tweets(train_docs, test_docs, train_labels, rare=5, freq_thresh=5
     word_freq = make_word_freq(tokenized_train + tokenized_test)
     pos_tweets = []
     neg_tweets = []
-    # length of tweets and their labels has to be equal
-    assert len(train_docs) == len(train_labels)
     # build positive and negative tweet lists
     for i, t in enumerate(tokenized_train):
         if train_labels[i] == pos:
@@ -104,8 +106,11 @@ def preprocess_tweets(train_docs, test_docs, train_labels, rare=5, freq_thresh=5
         if len(cleaned_tokens) < 1:
             cleaned_tokens = tt
         tokenized_test[i] = cleaned_tokens
+    # implement duplicate flags at the beginning
+    '''
     if duplicate_flag:
         clean_train, clean_label = delete_duplicates(clean_train, clean_label)
+    '''
     return clean_train, tokenized_test, clean_label
 
 
@@ -157,15 +162,13 @@ def delete_duplicates(tweets, labels):
     :param labels: list of labels
     :return: unique list of tweets and matching labels
     '''
-    u_tweets = []
-    u_labels = []
     if not len(tweets) == len(labels):
         print('tweet and label length mismatch')
         return tweets, labels
-    for i, t in enumerate(tweets):
-        if t not in u_tweets:
-            u_tweets.append(t)
-            u_labels.append(labels[i])
+    # make dict of unique tweets and their respective labels
+    u_dict = dict(zip(tweets, labels))
+    u_tweets = list(u_dict.keys())
+    u_labels = list(u_dict.values())
     return u_tweets, u_labels
 
 
