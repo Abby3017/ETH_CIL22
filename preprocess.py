@@ -1,16 +1,22 @@
 
 import re
+from wordsegment import load as load_segment
+from wordsegment import segment
 
 
-def preprocess_tweets(train_docs, test_docs, train_labels, rare=5, freq_thresh=5, interlabel_thresh=0.05, pos=1.0, neg=0.0):
+def preprocess_tweets(train_docs, test_docs, train_labels, rare=5, freq_thresh=5, interlabel_thresh=0.05, pos=1.0,
+                      neg=0.0, rare_flag=True, user_url_flag=True, digit_flag=True, common_flag=True,
+                      spellcheck_flag=True, duplicate_flag=False, segmentation=False):
     """
     preprocess training and test tweets. does the following preprocessing steps:
     1) turns sentences into lists of tokens (words)
     2) removes rare words, occurring less than "rare" times
     3) remove user and url from tweets
     4) remove words consisting solely of digits
-    5) remove words that occurr nearly equally frequent for positive and negative tweets
+    5) remove words that occur nearly equally frequent for positive and negative tweets
     6) spell-check words that would be discarded otherwise (are rare)
+    7) delete duplicate tweets. disabled by default
+    8) do word segmentation to hashtags. disabled by default
     ------------------------------------------------------------------------
     :param train_docs: training tweets as list of strings
     :param test_docs: testing tweets as list of strings
@@ -20,10 +26,22 @@ def preprocess_tweets(train_docs, test_docs, train_labels, rare=5, freq_thresh=5
     :param interlabel_thresh: interlabel commonality threshold
     :param pos: positive tweet label
     :param neg: negative tweet label
+    :param rare_flag: if True, does rare word removal
+    :param user_url_flag: if True, does common word removal
+    :param digit_flag: if True, does digit removal
+    :param common_flag: if True, does common word removal
+    :param spellcheck_flag: if True, does spellchecking for rare words
+    :param duplicate_flag: if True, duplicate tweets get deleted
+    :param segmentation: if True, does segmentation of hashtags
     :return: tuple of preprocessed train tweets, preprocessed test tweets and training labels
     """
     tokenized_train = split_into_tokens(train_docs)
     tokenized_test = split_into_tokens(test_docs)
+    if segmentation:
+        # do hashtag segmentation
+        load_segment()
+        tokenized_train = segment_hashtags(tokenized_train)
+        tokenized_test = segment_hashtags(tokenized_test)
     # word freq of train and test docs
     word_freq = make_word_freq(tokenized_train + tokenized_test)
     pos_tweets = []
@@ -44,12 +62,13 @@ def preprocess_tweets(train_docs, test_docs, train_labels, rare=5, freq_thresh=5
         cleaned_tokens = []
         for j, t in enumerate(tt):
             # is the word not a user, url or digit
-            if not is_user_url(t) and not t.isdigit():
+            if (not is_user_url(t) or not user_url_flag) and (not t.isdigit() or not digit_flag):
                 # do we pass the rare threshold?
-                if word_freq[t] > rare:
-                    if not common_interlabel(t, pos_word_freq, neg_word_freq, thresh=interlabel_thresh):
+                if word_freq[t] > rare or not rare_flag:
+                    if not common_interlabel(t, pos_word_freq, neg_word_freq, thresh=interlabel_thresh) or \
+                            not common_flag:
                         cleaned_tokens.append(t)
-                else:
+                elif spellcheck_flag:
                     # corrected word candidates
                     word_candidates = spellcheck(t, word_freq, freq_thresh=freq_thresh)
                     for w in word_candidates:
@@ -85,7 +104,69 @@ def preprocess_tweets(train_docs, test_docs, train_labels, rare=5, freq_thresh=5
         if len(cleaned_tokens) < 1:
             cleaned_tokens = tt
         tokenized_test[i] = cleaned_tokens
+    if duplicate_flag:
+        clean_train, clean_label = delete_duplicates(clean_train, clean_label)
     return clean_train, tokenized_test, clean_label
+
+
+def segment_hashtags(tokenized_tweets):
+    '''
+    segments hashtags of tweets
+    :param tokenized_tweets: tokenized tweets to do hashtag segmentation on
+    :return: hashtag segmented tweets. list of lists of tokens (words)
+    '''
+    segmented_tweets = []
+    for tt in tokenized_tweets:
+        tokens = []
+        for t in tt:
+            tokens.append(t)
+            if t[0] == '#':
+                ht_segments = segment(t)
+                tokens.append(ht_segments)
+        segmented_tweets.append(tokens)
+    return segmented_tweets
+
+
+def load_data(pos_path, neg_path):
+    '''
+    load positive and negative tweets
+    :param pos_path: positive tweet path
+    :param neg_path: negative tweet path
+    :return: list of tweets and list labels
+    '''
+    # read positive tweets
+    with open(pos_path, encoding='utf-8') as f:
+        lines = f.read().splitlines()
+        n_data = lines
+    print('read negative tweet lines ', len(n_data))
+    # use negative tweets
+    with open(neg_path, encoding='utf-8') as f:
+        lines = f.read().splitlines()
+        p_data = lines
+    print('read positive tweet lines ', len(p_data))
+    # fill all tweet data and target labels
+    tweet_data = p_data + n_data
+    tweet_labels = [1.0 for _ in p_data] + [0.0 for _ in n_data]
+    return tweet_data, tweet_labels
+
+
+def delete_duplicates(tweets, labels):
+    '''
+    delete duplicates in tweets and output new tweets and labels
+    :param tweets: list of tweets
+    :param labels: list of labels
+    :return: unique list of tweets and matching labels
+    '''
+    u_tweets = []
+    u_labels = []
+    if not len(tweets) == len(labels):
+        print('tweet and label length mismatch')
+        return tweets, labels
+    for i, t in enumerate(tweets):
+        if t not in u_tweets:
+            u_tweets.append(t)
+            u_labels.append(labels[i])
+    return u_tweets, u_labels
 
 
 # handle empty training tweets
@@ -109,17 +190,16 @@ def split_into_tokens(doc_lines):
         tokenized_lines.append(d.split())
     return tokenized_lines
 
-# possibly combine punctuations like ! ? ! into !?!
 
-# word frequency mappin
-def make_word_freq(token_lines):
+# word frequency mapping
+def make_word_freq(tokenized_lines):
     """
     output word frequency dictionary from token list
     :param token token_lines: list of tokens
     :return: dictionary of word frequencies
     """
     word_freq = {}
-    for tl in token_lines:
+    for tl in tokenized_lines:
         for t in tl:
             if t in word_freq:
                 word_freq[t] += 1
@@ -127,7 +207,7 @@ def make_word_freq(token_lines):
                 word_freq[t] = 1
     return word_freq
 
-# common words in both positive and negatvie tweets
+
 def common_interlabel(word, p_freq, n_freq, thresh=0.05):
     """
     boolean function, for whether a word is frequent in two separate frequency dicts (usually positive and negative)
@@ -229,3 +309,15 @@ def spellcheck(word, wordfreq, freq_thresh, len_thresh=5, split_words=True):
         return []
     else:
         return [max_cand]
+
+
+def tokens_to_sentence(tokens_list):
+    """
+    outputs list of sentences from tokens
+    :param tokens_list: list of lists of tokens
+    :return: list of sentences
+    """
+    sentence_list = []
+    for tl in tokens_list:
+        sentence_list.append(' '.join(tl))
+    return sentence_list
