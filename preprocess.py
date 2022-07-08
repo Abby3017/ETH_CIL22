@@ -1,5 +1,10 @@
 
 import re
+
+import nltk
+from hashformers import TransformerWordSegmenter as WordSegmenter
+from nltk.stem.wordnet import WordNetLemmatizer
+from nltk.tag import pos_tag
 from wordsegment import load as load_segment
 from wordsegment import segment
 
@@ -36,7 +41,8 @@ def preprocess_tweets(train_docs, test_docs, train_labels, rare=5, freq_thresh=5
     :return: tuple of preprocessed train tweets, preprocessed test tweets and training labels
     """
     # length of tweets and their labels has to be equal
-    assert len(train_docs) == len(train_labels), 'training tweets and labels length should be the same'
+    assert len(train_docs) == len(
+        train_labels), 'training tweets and labels length should be the same'
     if duplicate_flag:
         train_docs, train_labels = delete_duplicates(train_docs, train_labels)
     tokenized_train = split_into_tokens(train_docs)
@@ -72,7 +78,8 @@ def preprocess_tweets(train_docs, test_docs, train_labels, rare=5, freq_thresh=5
                         cleaned_tokens.append(t)
                 elif spellcheck_flag:
                     # corrected word candidates
-                    word_candidates = spellcheck(t, word_freq, freq_thresh=freq_thresh)
+                    word_candidates = spellcheck(
+                        t, word_freq, freq_thresh=freq_thresh)
                     for w in word_candidates:
                         # does the corrected word check the other tests?
                         if not is_user_url(w) and not w.isdigit() and not common_interlabel(w, pos_word_freq,
@@ -82,7 +89,8 @@ def preprocess_tweets(train_docs, test_docs, train_labels, rare=5, freq_thresh=5
         tokenized_train[i] = cleaned_tokens
     # delete empty elements in training data
     clean_train, clean_label = delete_empties(tokenized_train, train_labels)
-    assert len(clean_train) == len(clean_label), "dimension mismatch between train data and labels"
+    assert len(clean_train) == len(
+        clean_label), "dimension mismatch between train data and labels"
     # iterate over testing data
     for i, tt in enumerate(tokenized_test):
         cleaned_tokens = []
@@ -95,7 +103,8 @@ def preprocess_tweets(train_docs, test_docs, train_labels, rare=5, freq_thresh=5
                         cleaned_tokens.append(t)
                 else:
                     # corrected word candidates
-                    word_candidates = spellcheck(t, word_freq, freq_thresh=freq_thresh)
+                    word_candidates = spellcheck(
+                        t, word_freq, freq_thresh=freq_thresh)
                     for w in word_candidates:
                         # does the corrected word check the other tests?
                         if not is_user_url(w) and not w.isdigit() and not common_interlabel(w, pos_word_freq,
@@ -131,6 +140,21 @@ def segment_hashtags(tokenized_tweets):
                 tokens += ht_segments
         segmented_tweets.append(tokens)
     return segmented_tweets
+
+
+def hashformers_hashtag_segment(hashtag_words):
+    '''
+    segment hashtag in input
+    param: pass token starting with hashtag in form of list (but pass word without hashtag)
+    return: list of string with segmented hashtags
+    '''
+    ws = WordSegmenter(
+        # can try other segmenter too more from this list https://huggingface.co/models
+        segmenter_model_name_or_path="gpt2",
+        reranker_model_name_or_path="bert-base-uncased"  # this is optional
+    )
+    segmentations = ws.segment(hashtag_words)
+    return segmentations
 
 
 def load_data(pos_path, neg_path):
@@ -178,9 +202,32 @@ def delete_empties(train_tweets, tweet_labels):
     # tokenized lists of training tweets that are not empty
     non_empty_train = [t for t in train_tweets if len(t) >= 1]
     # if training tweet not empty label also doesn't get removed
-    non_empty_label = [l for i, l in enumerate(tweet_labels) if len(train_tweets[i]) >= 1]
+    non_empty_label = [l for i, l in enumerate(
+        tweet_labels) if len(train_tweets[i]) >= 1]
     return non_empty_train, non_empty_label
 
+
+def lemmatize_sentence(tokens):
+    '''
+    lemmatization of string
+    param tokens: list of token 
+    return: list of tokens(words)
+    '''
+    nltk.download('wordnet')
+    nltk.download('averaged_perceptron_tagger')
+    nltk.download('stopwords')
+    nltk.download('omw-1.4')
+    lemmatizer = WordNetLemmatizer()
+    lemmatized_sentence = []
+    for word, tag in pos_tag(tokens):
+        if tag.startswith('NN'):
+            pos = 'n'
+        elif tag.startswith('VB'):
+            pos = 'v'
+        else:
+            pos = 'a'
+        lemmatized_sentence.append(lemmatizer.lemmatize(word, pos))
+    return lemmatized_sentence
 
 
 def split_into_tokens(doc_lines):
@@ -229,6 +276,8 @@ def common_interlabel(word, p_freq, n_freq, thresh=0.05):
     return False
 
 # is user url
+
+
 def is_user_url(word):
     """
     is the word user or url
@@ -239,6 +288,8 @@ def is_user_url(word):
 
 # some spellcheck functions
 # edit functions from peter norvig
+
+
 def edits1(word):
     """
     potentially corrected words created through a single edit
@@ -249,10 +300,11 @@ def edits1(word):
     letters = 'abcdefghijklmnopqrstuvwxyz'
     splits = [(word[:i], word[i:]) for i in range(len(word) + 1)]
     deletes = [L + R[1:] for L, R in splits if R]
-    transposes = [L + R[1] + R[0] + R[2:] for L, R in splits if len(R)>1]
+    transposes = [L + R[1] + R[0] + R[2:] for L, R in splits if len(R) > 1]
     replaces = [L + c + R[1:] for L, R in splits if R for c in letters]
     inserts = [L + c + R for L, R in splits for c in letters]
     return deletes + transposes + replaces + inserts
+
 
 def edits2(word):
     """
@@ -261,6 +313,7 @@ def edits2(word):
     :return: spellchecked candidates
     """
     return (e2 for e1 in edits1(word) for e2 in edits1(e1))
+
 
 def spellcheck(word, wordfreq, freq_thresh, len_thresh=5, split_words=True):
     """
