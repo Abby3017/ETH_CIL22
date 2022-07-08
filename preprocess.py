@@ -2,6 +2,7 @@
 import re
 
 import nltk
+from hashformers import TransformerWordSegmenter as WordSegmenter
 from nltk.stem.wordnet import WordNetLemmatizer
 from nltk.tag import pos_tag
 from wordsegment import load as load_segment
@@ -138,6 +139,21 @@ def segment_hashtags(tokenized_tweets):
                 tokens.append(ht_segments)
         segmented_tweets.append(tokens)
     return segmented_tweets
+
+
+def hashformers_hashtag_segment(hashtag_words):
+    '''
+    segment hashtag in input
+    param: pass token starting with hashtag in form of list (but pass word without hashtag)
+    return: list of string with segmented hashtags
+    '''
+    ws = WordSegmenter(
+        # can try other segmenter too more from this list https://huggingface.co/models
+        segmenter_model_name_or_path="gpt2",
+        reranker_model_name_or_path="bert-base-uncased"  # this is optional
+    )
+    segmentations = ws.segment(hashtag_words)
+    return segmentations
 
 
 def load_data(pos_path, neg_path):
