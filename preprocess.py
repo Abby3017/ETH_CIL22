@@ -125,9 +125,10 @@ def segment_hashtags(tokenized_tweets):
         tokens = []
         for t in tt:
             tokens.append(t)
-            if t[0] == '#':
-                ht_segments = segment(t)
-                tokens.append(ht_segments)
+            if t[0] == '#' and len(t) > 1:
+                # print(type(t[1:]))
+                ht_segments = segment(t[1:])
+                tokens += ht_segments
         segmented_tweets.append(tokens)
     return segmented_tweets
 
@@ -218,10 +219,12 @@ def common_interlabel(word, p_freq, n_freq, thresh=0.05):
     :param p_freq: positive frequency dict
     :param n_freq: negative frequency dict
     :param thresh: threshold how far from an equal distribution we can get
+    :param lower_bound: lower bound for how frequent the word is
     :return: True, if the word is common in both frequency dictionaries
     """
     if word in p_freq and word in n_freq:
         if 1+thresh > (float(p_freq[word])/float(n_freq[word])) > 1-thresh:
+            # print(word)
             return True
     return False
 
