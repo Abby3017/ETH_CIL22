@@ -1,0 +1,36 @@
+
+lou:
+- try (baseline) models with preprocessing
+- try further submissions on kaggle (they seem to be quite a bit lower than locally)
+- try ensemble models with different models and embeddings
+- not available much after 17.July
+- introduction part of the report and baseline models!
+- some possible baseline models: logistic regression, svm, random forest w tfidf, 
+PRIORITY:
+- >>>>>>>>>> decide on the baseline models by considering: examples shown on tutorial slides,
+			 simpler models we have tried from svm to rnn models,
+			 look at typical baseline models in literature
+
+
+abhinav:
+- continue working with bert model, roberta, bertweet
+- >>>>>>>>>> lstm with attention promising, try implementing it with preprocessing and do submission on kaggle!
+- submit
+add following to preprocess.py:
+- lemmatization
+- hashtag segmentation
+
+
+ahmet
+outliers:
+- for future consideration: outlier detection by using ensemble model (possibly lstm combined with others) to determine outliers/wrongly labeled tweets
+preprocessing (priority):
+- finish testing and debugging of preprocessing
+- see if duplicate deletion can be done more efficiently and/or if maybe the whole code can have duplicates removed
+- write sample implementation from data loading to preprocessing so we can all have a uniform preprocessing step
+- merge preprocessing branch to the main
+xlnet (priority):
+- start with xlnet text classification
+
+
+next meeting on monday 11.7.2022, 9:00 - 10:00
