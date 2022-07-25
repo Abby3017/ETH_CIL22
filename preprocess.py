@@ -2,7 +2,7 @@
 import re
 
 import nltk
-from hashformers import TransformerWordSegmenter as WordSegmenter
+# from hashformers import TransformerWordSegmenter as WordSegmenter
 from nltk.stem.wordnet import WordNetLemmatizer
 from nltk.tag import pos_tag
 from wordsegment import load as load_segment
@@ -82,9 +82,9 @@ def preprocess_tweets(train_docs, test_docs, train_labels, rare=5, freq_thresh=5
                         t, word_freq, freq_thresh=freq_thresh)
                     for w in word_candidates:
                         # does the corrected word check the other tests?
-                        if not is_user_url(w) and not w.isdigit() and not common_interlabel(w, pos_word_freq,
-                                                                                            neg_word_freq,
-                                                                                            thresh=interlabel_thresh):
+                        if (not is_user_url(w) or not user_url_flag) and (not w.isdigit() or not digit_flag) and not \
+                                (common_interlabel(w, pos_word_freq, neg_word_freq, thresh=interlabel_thresh) or not
+                                common_flag):
                             cleaned_tokens.append(w)
         tokenized_train[i] = cleaned_tokens
     # delete empty elements in training data
@@ -96,20 +96,21 @@ def preprocess_tweets(train_docs, test_docs, train_labels, rare=5, freq_thresh=5
         cleaned_tokens = []
         for j, t in enumerate(tt):
             # is the word not a user, url or digit
-            if not is_user_url(t) and not t.isdigit():
+            if (not is_user_url(t) or not user_url_flag) and (not t.isdigit() or not digit_flag):
                 # do we pass the rare threshold?
-                if word_freq[t] > rare:
-                    if not common_interlabel(t, pos_word_freq, neg_word_freq, thresh=interlabel_thresh):
+                if word_freq[t] > rare or not rare_flag:
+                    if not common_interlabel(t, pos_word_freq, neg_word_freq, thresh=interlabel_thresh) or \
+                            not common_flag:
                         cleaned_tokens.append(t)
-                else:
+                elif spellcheck_flag:
                     # corrected word candidates
                     word_candidates = spellcheck(
                         t, word_freq, freq_thresh=freq_thresh)
                     for w in word_candidates:
                         # does the corrected word check the other tests?
-                        if not is_user_url(w) and not w.isdigit() and not common_interlabel(w, pos_word_freq,
-                                                                                            neg_word_freq,
-                                                                                            thresh=interlabel_thresh):
+                        if (not is_user_url(w) or not user_url_flag) and (not w.isdigit() or not digit_flag) and not \
+                                (common_interlabel(w, pos_word_freq, neg_word_freq, thresh=interlabel_thresh) or not
+                                common_flag):
                             cleaned_tokens.append(w)
         # test tweets shouldn't be empty. if they are, then use the original without preprocessing
         if len(cleaned_tokens) < 1:
@@ -142,12 +143,13 @@ def segment_hashtags(tokenized_tweets):
     return segmented_tweets
 
 
+'''
 def hashformers_hashtag_segment(hashtag_words):
-    '''
+    
     segment hashtag in input
     param: pass token starting with hashtag in form of list (but pass word without hashtag)
     return: list of string with segmented hashtags
-    '''
+    
     ws = WordSegmenter(
         # can try other segmenter too more from this list https://huggingface.co/models
         segmenter_model_name_or_path="gpt2",
@@ -155,7 +157,7 @@ def hashformers_hashtag_segment(hashtag_words):
     )
     segmentations = ws.segment(hashtag_words)
     return segmentations
-
+'''
 
 def load_data(pos_path, neg_path):
     '''
