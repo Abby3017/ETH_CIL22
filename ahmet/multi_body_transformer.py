@@ -1,9 +1,10 @@
-
+import torch.nn.functional as F
 from transformers import AutoTokenizer, AutoModel, ElectraTokenizer, ElectraModel
 from transformers.modeling_outputs import TokenClassifierOutput
 import numpy as np
 import torch.nn as nn
 import torch
+import torch.nn.functional as F
 
 class TwoBodyModel(nn.Module):
 
@@ -30,17 +31,17 @@ class TwoBodyModel(nn.Module):
         # print(output_1[0].shape)
         # print(output_2[0].shape)
         # use: [CLS] token, we can obtain it by typing outputs[0][:, 0, :]
-        pre_output_1 = self.dropout_1(output_1[0][:, 0, :])
-        pre_output_2 = self.dropout_2(output_2[0][:, 0, :])
+        pre_output_1 = self.dropout_1(F.gelu(output_1[0][:, 0, :]))
+        pre_output_2 = self.dropout_2(F.gelu(output_2[0][:, 0, :]))
         # print(pre_output_1.shape)
         # print(pre_output_2.shape)
         pre_output_1 = self.pre_classifier_1(pre_output_1)
-        pre_output_1 = self.dropout_1_2(pre_output_1)
+        pre_output_1 = self.dropout_1_2(F.gelu(pre_output_1))
         pre_output_2 = self.pre_classifier_2(pre_output_2)
-        pre_output_2 = self.dropout_2_2(pre_output_2)
+        pre_output_2 = self.dropout_2_2(F.gelu(pre_output_2))
         output = self.classifier_1(torch.cat((pre_output_1, pre_output_2), 1))
         # print(output.shape)
-        output = self.dropout_3(output)
+        output = self.dropout_3(F.gelu(output))
         logits = self.classifier_2(output)
         # print(logits.shape)
 
