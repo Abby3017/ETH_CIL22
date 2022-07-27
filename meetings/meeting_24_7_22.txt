@@ -1,0 +1,28 @@
+
+meeting notes
+
+models:
+- 2 baselines
+- novel transformer with diff ensembles
+- lstm, cnn, linear baseline logistic regression
+- results on github
+
+- predefine split and show results for all on that
+
+ahmet:
+- written: kaggle, train test, percentages
+# - electra, distilbert
+- look at lou's preprocessing
+
+lou:
+- try to improve on neural network baseline, dropouts and tanh
+- stacked cnn as ensemble
+- compare preprocessing and combine them and put results
+- random_seed, same for all
+
+kate:
+- do preprocessing testing
+- all preprocessing steps on different models, baseline and novel
+
+abhinav:
+- lstm attention, ensemble models
