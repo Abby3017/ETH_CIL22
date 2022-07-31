@@ -6,7 +6,7 @@ Implementation of sentiment classification for a Twitter dataset in the scope of
 
 To preprocess the data we use the `preprocess_tweets()` function in `preprocess.py`. The flags can be set arbitrarily to perform the different preprocessing steps as described in the report.
 
-By default, we only implement duplicate tweet deletion.
+By default, we only implement duplicate tweet deletion. For hashtag segmentation, the `load_segment()` function from the `wordsegment` library has to be called before `preprocess_tweets()`.
 
 # Usage
 
