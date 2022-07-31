@@ -12,7 +12,7 @@ By default, we only implement duplicate tweet deletion. For hashtag segmentation
 
 We have implemented the classifiers listed below. Run the corresponding files and set the `big_data` variable in each of the files to `True` to train the classifier on the entire dataset; otherwise it will be trained on the small dataset. Make sure you have the files `train_pos.txt`, `train_neg.txt`, `train_pos_full.txt`, `train_pos_neg.txt`, and `test_data.txt` in the `data` folder.
 
-For the distilbert model, the contents of the folder https://polybox.ethz.ch/index.php/s/Q14qxlYeb3oy7ze are needed. Namely the model and tokenizer subfolders. Make sure this folder is included in the same directory as the classifier python files, as "./distilbert-sst/model" and "./distilbert-sst/tokenizer" need to be accessed.
+For the distilbert and combined models, the contents of the folder https://polybox.ethz.ch/index.php/s/Q14qxlYeb3oy7ze are needed. Namely the model and tokenizer subfolders. Make sure this folder is included in the same directory as the classifier python files, as "./distilbert-sst/model" and "./distilbert-sst/tokenizer" need to be accessed.
 
 Each of the classifiers already has preprocessing implemented. The preprocessing methods can be selected by setting the flags in `preprocess_tweets()` in the classifier's file as desired.
 
