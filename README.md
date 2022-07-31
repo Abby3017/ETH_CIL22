@@ -41,5 +41,5 @@ The following packages are required:
     - `numpy`
     - `scikit-learn`
     - `torch`
-    - `tensorflow`
+    - `tensorflow>=2.9.1`
     - `gensim<=3.8.3`
