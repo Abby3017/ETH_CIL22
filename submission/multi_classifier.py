@@ -71,7 +71,7 @@ with open(positive_path, encoding='utf-8') as f:
 print('positive tweet lines: ', len(p_data))
 
 # load test data
-with open('../../../data/test_data.txt', encoding='utf-8') as f:
+with open('./data/test_data.txt', encoding='utf-8') as f:
     lines = f.read().splitlines()
     t_data = lines
 
