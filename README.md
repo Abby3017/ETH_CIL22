@@ -1,15 +1,37 @@
 # ETH_CIL22 Sentiment Analysis
 
-Implementation of text classification based on sentiment or the course Computational Intelligence Lab @ ETH Zurich. Spring 2022.
+Implementation of sentiment classification for a Twitter dataset in the scope of the Computational Intelligence Lab @ ETH Zurich, Spring 2022.
 
-# Preprocessing Steps
+# Preprocessing
 
-Following preprocessing steps used on the twitter dataset:
-# Models Used
+To preprocess the data we use the `preprocess_tweets()` function in `preprocess.py`. The flags can be set arbitrarily to perform the different preprocessing steps as described in the report.
+
+By default, we only implement duplicate tweet deletion.
+
+# Usage
+
+We have implemented the classifiers listed below. Run the corresponding files and set the `big_data` variable in each of the files to `True` to train the classifier on the entire dataset; otherwise it will be trained on the small dataset. Make sure you have the files `train_pos.txt`, `train_neg.txt`, `train_pos_full.txt`, `train_pos_neg.txt`, and `test_data.txt` in the `data` folder.
+
+Each of the classifiers already has preprocessing implemented. The preprocessing methods can be selected by setting the flags in `preprocess_tweets()` in the classifier's file as desired.
 
 ### Logistic Regression
-Logistic Regression is used one of the baseline model for this task.
-To run this model, run [Logistic_regression](https://github.com/Abby3017/ETH_CIL22/blob/main/baselines/linear_baseline.py) with
-following command `python3 run linear_baseline.py` having preprocess.py in same folder.
+Logistic Regression is used as one of the baseline models for this task.
+To run this model, run the `logistic_regression_classifier.py` file.
 
-# Running Experiment
+### Bidirectional LSTM
+Run `lstm_classifier.py` to train this baseline model.
+
+
+# Requirements
+
+The following packages are required:
+- Preprocessing:
+    - `nltk`
+    - `wordsegment`
+- Classifiers:
+    - `transformers`
+    - `numpy`
+    - `scikit-learn`
+    - `torch`
+    - `tensorflow`
+    - `gensim<=3.8.3`
