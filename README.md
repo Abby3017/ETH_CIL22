@@ -32,7 +32,7 @@ DistilBERT Classifier model for text classification. Parameter big_data should b
 ### Combined GELU Classifier
 Two body transformer classifier model using both ELECTRA and DistilBERT models and a neural network with GELU activation functions as a classification head. Parameter big_data should be True (by default) for classification on the full twitter dataset and False for the smaller dataset. Simply run `multi_classifier.py`, with `preprocess.py` in the same folder and the twitter datasets in the data folder.
 
-Combined GELU is the exact model we used for the final Kaggle submission. The submission file is the ".csv" written after the second training epoch is done. 
+Combined GELU, with the `big_data` variable set to `True`, is the exact model we used for the final Kaggle submission. The submission file is the ".csv" written after the second training epoch is done. 
 
 # Requirements
 
