@@ -28,7 +28,7 @@ ELECTRA classifier model for text classification. Parameter big_data should be T
 DistilBERT Classifier model for text classification. Parameter big_data should be True (by default) for classification on the full twitter dataset and False for the smaller dataset. Simply run `distbert_transformer_classifier.py`, with `preprocess.py` in the same folder and the twitter datasets in the data folder.
 
 ### Combined GELU Classifier
-Two body transformer classifier model using both ELECTRA and DistilBERT models and a multiple layer neural network with GELU activation functions as a classification head. Parameter big_data should be True (by default) for classification on the full twitter dataset and False for the smaller dataset. Simply run `multi_classifier.py`, with `preprocess.py` in the same folder and the twitter datasets in the data folder.
+Two body transformer classifier model using both ELECTRA and DistilBERT models and a neural network with GELU activation functions as a classification head. Parameter big_data should be True (by default) for classification on the full twitter dataset and False for the smaller dataset. Simply run `multi_classifier.py`, with `preprocess.py` in the same folder and the twitter datasets in the data folder.
 
 # Requirements
 
