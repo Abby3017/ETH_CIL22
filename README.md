@@ -6,7 +6,7 @@ Implementation of sentiment classification for a Twitter dataset in the scope of
 
 To preprocess the data we use the `preprocess_tweets()` function in `preprocess.py`. The flags can be set arbitrarily to perform the different preprocessing steps as described in the report.
 
-By default, we only implement duplicate tweet deletion.
+By default, we only implement duplicate tweet deletion. For hashtag segmentation, the `load_segment()` function from the `wordsegment` library has to be called before `preprocess_tweets()`.
 
 # Usage
 
@@ -21,6 +21,14 @@ To run this model, run the `logistic_regression_classifier.py` file.
 ### Bidirectional LSTM
 Run `lstm_classifier.py` to train this baseline model.
 
+### ELECTRA Classifier
+ELECTRA classifier model for text classification. Parameter big_data should be True (by default) for classification on the full twitter dataset and False for the smaller dataset. Simply run `electra_transformer_classifier.py`, with `preprocess.py` in the same folder and the twitter datasets in the data folder.
+
+### DistilBERT Classifier
+DistilBERT Classifier model for text classification. Parameter big_data should be True (by default) for classification on the full twitter dataset and False for the smaller dataset. Simply run `distbert_transformer_classifier.py`, with `preprocess.py` in the same folder and the twitter datasets in the data folder.
+
+### Combined GELU Classifier
+Two body transformer classifier model using both ELECTRA and DistilBERT models and a multiple layer neural network with GELU activation functions as a classification head. Parameter big_data should be True (by default) for classification on the full twitter dataset and False for the smaller dataset. Simply run `multi_classifier.py`, with `preprocess.py` in the same folder and the twitter datasets in the data folder.
 
 # Requirements
 
